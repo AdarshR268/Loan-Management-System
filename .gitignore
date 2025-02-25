@@ -1,0 +1,9 @@
+# Loan Management System-FrontEnd
+Loan Management System-FrontEnd/node_modules/
+Loan Management System-FrontEnd/dist/
+
+# Backend
+Loan Management System-Backend/__pycache__/
+Loan Management System-Backend/*/__pycache__/
+Loan Management System-Backend/*/*/__pycache__/
+Loan Management System-Backend/.env
