@@ -27,7 +27,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',  # Django REST Framework
     'rest_framework_simplejwt',  # JWT Authentication
-    'rest_framework_authtoken',
+    # 'rest_framework_authtoken',
     'corsheaders',  # CORS Headers for cross-origin requests
     'loans',  # Loans app
     'allauth',  # Django Allauth for social authentication
