@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Loan Details</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #333; }
+        .loan-details { margin-top: 20px; }
+        .loan-details p { margin: 10px 0; }
+        .back-btn { display: inline-block; margin-top: 20px; padding: 10px 20px; background: #007BFF; color: white; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Loan Details</h1>
+    <div class="loan-details">
+        <p><strong>Loan ID:</strong> {{ loan.id }}</p>
+        <p><strong>Amount:</strong> ₹{{ loan.amount }}</p>
+        <p><strong>Tenure:</strong> {{ loan.tenure }} months</p>
+        <p><strong>Interest Rate:</strong> {{ loan.interest_rate }}%</p>
+        <p><strong>Monthly Installment:</strong> ₹{{ loan.monthly_installment }}</p>
+        <p><strong>Total Amount:</strong> ₹{{ loan.total_amount }}</p>
+        <p><strong>Status:</strong> {{ loan.status }}</p>
+    </div>
+    <a href="{% url 'loan-list' %}" class="back-btn">Back to Loan List</a>
+</body>
+</html>

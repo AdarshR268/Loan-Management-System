@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Foreclose Loan</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #333; }
+        form { margin-top: 20px; }
+        button { padding: 10px 20px; background: #007BFF; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>Foreclose Loan</h1>
+    <p>Are you sure you want to foreclose this loan?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">Foreclose Loan</button>
+    </form>
+    <a href="{% url 'loan-detail' loan.id %}" style="display: inline-block; margin-top: 20px;">Cancel</a>
+</body>
+</html>

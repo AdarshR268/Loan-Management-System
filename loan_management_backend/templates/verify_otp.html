@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OTP Verification</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #333; }
+        form { margin-top: 20px; }
+        label { display: block; margin: 10px 0 5px; }
+        input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        button { padding: 10px 20px; background: #007BFF; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .error { color: red; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>OTP Verification</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="otp">OTP:</label>
+        <input type="text" id="otp" name="otp" required maxlength="6">
+
+        {% if errors %}
+            <div class="error">
+                {% for field, error_list in errors.items %}
+                    {{ field }}: {{ error_list.0 }}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <button type="submit">Verify OTP</button>
+    </form>
+</body>
+</html>
