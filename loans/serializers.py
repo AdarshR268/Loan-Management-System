@@ -4,16 +4,14 @@ from .models import Loan
 
 User = get_user_model()
 
-# User Registration Serializer
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)  # Password field (write-only)
+    password = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password', 'is_admin')  # Fields for user registration
+        fields = ('username', 'email', 'password', 'is_admin')
 
     def create(self, validated_data):
-        # Create a new user
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
@@ -22,32 +20,27 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         )
         return user
 
-# OTP Verification Serializer
 class OTPSerializer(serializers.Serializer):
-    email = serializers.EmailField()  # Email field for OTP verification
-    otp = serializers.CharField(max_length=6)  # OTP field
+    email = serializers.EmailField()
+    otp = serializers.CharField(max_length=6)
 
-# Loan Serializer
 class LoanSerializer(serializers.ModelSerializer):
     class Meta:
         model = Loan
-        fields = '__all__'  # Include all fields in the serializer
-        read_only_fields = ('user', 'monthly_installment', 'total_interest', 'total_amount', 'status', 'created_at', 'updated_at')  # Read-only fields
+        fields = '__all__'
+        read_only_fields = ('user', 'monthly_installment', 'total_interest', 'total_amount', 'status', 'created_at', 'updated_at')
 
     def validate_amount(self, value):
-        # Validate loan amount
-        if value < 1000 or value > 100000:
+        if value is None or value < 1000 or value > 100000:
             raise serializers.ValidationError("Loan amount must be between ₹1,000 and ₹100,000.")
         return value
 
     def validate_tenure(self, value):
-        # Validate loan tenure
-        if value < 3 or value > 24:
+        if value is None or value < 3 or value > 24:
             raise serializers.ValidationError("Loan tenure must be between 3 and 24 months.")
         return value
 
     def validate_interest_rate(self, value):
-        # Validate interest rate
-        if value < 0 or value > 100:
+        if value is None or value < 0 or value > 100:
             raise serializers.ValidationError("Interest rate must be between 0% and 100%.")
         return value

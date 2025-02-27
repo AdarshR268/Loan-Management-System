@@ -1,37 +1,146 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OTP Verification</title>
+    <!-- Bootstrap CSS for styling -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        h1 { color: #333; }
-        form { margin-top: 20px; }
-        label { display: block; margin: 10px 0 5px; }
-        input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 5px; }
-        button { padding: 10px 20px; background: #007BFF; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        button:hover { background: #0056b3; }
-        .error { color: red; margin-bottom: 10px; }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .otp-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .otp-container h1 {
+            color: #007bff;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+        .form-label {
+            font-weight: bold;
+            color: #333;
+        }
+        .form-control {
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .error {
+            color: red;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .resend-otp {
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+        .resend-otp a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .resend-otp a:hover {
+            text-decoration: underline;
+        }
+        .otp-timer {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #666;
+        }
     </style>
 </head>
 <body>
-    <h1>OTP Verification</h1>
-    <form method="post">
-        {% csrf_token %}
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required>
-
-        <label for="otp">OTP:</label>
-        <input type="text" id="otp" name="otp" required maxlength="6">
-
-        {% if errors %}
-            <div class="error">
-                {% for field, error_list in errors.items %}
-                    {{ field }}: {{ error_list.0 }}
-                {% endfor %}
+    <div class="otp-container">
+        <h1>OTP Verification</h1>
+        <form method="post">
+            {% csrf_token %}
+            
+            <!-- Email Field -->
+            <div class="mb-3">
+                <label for="email" class="form-label">Email:</label>
+                <input type="email" id="email" name="email" class="form-control" required>
             </div>
-        {% endif %}
 
-        <button type="submit">Verify OTP</button>
-    </form>
+            <!-- OTP Field -->
+            <div class="mb-3">
+                <label for="otp" class="form-label">OTP:</label>
+                <input type="text" id="otp" name="otp" class="form-control" required maxlength="6">
+            </div>
+
+            <!-- Error Messages -->
+            {% if errors %}
+                <div class="error">
+                    {% for field, error_list in errors.items %}
+                        {{ field }}: {{ error_list.0 }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary">Verify OTP</button>
+        </form>
+
+        <!-- Resend OTP Option -->
+        <div class="resend-otp">
+            <p>Didn't receive the OTP? <a href="{% url 'resend-otp' %}">Resend OTP</a></p>
+        </div>
+
+        <!-- Countdown Timer -->
+        <div class="otp-timer">
+            <p>OTP expires in: <span id="timer">05:00</span></p>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Countdown Timer Script -->
+    <script>
+        let timeLeft = 300; // 5 minutes in seconds
+        const timer = document.getElementById('timer');
+
+        const countdown = setInterval(() => {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timer.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            timeLeft--;
+
+            if (timeLeft < 0) {
+                clearInterval(countdown);
+                timer.textContent = "OTP expired";
+            }
+        }, 1000);
+    </script>
 </body>
 </html>

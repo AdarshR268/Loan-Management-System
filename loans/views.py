@@ -10,12 +10,6 @@ from .models import Loan, User
 from .serializers import LoanSerializer, UserRegistrationSerializer, OTPSerializer
 import random
 
-
-from django.shortcuts import render
-
-def home(request):
-    return render(request, 'home.html')
-
 # Permission class to check if the user is an admin
 class IsAdminUser(BasePermission):
     def has_permission(self, request, view):
@@ -24,7 +18,7 @@ class IsAdminUser(BasePermission):
 # User Registration View
 class UserRegistrationView(APIView):
     def get(self, request):
-        return render(request, 'loans/register.html')
+        return render(request, 'register.html')
 
     def post(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
@@ -48,7 +42,7 @@ class UserRegistrationView(APIView):
 # OTP Verification View
 class OTPVerificationView(APIView):
     def get(self, request):
-        return render(request, 'loans/verify_otp.html')
+        return render(request, 'verify_otp.html')
 
     def post(self, request):
         serializer = OTPSerializer(data=request.data)
@@ -66,7 +60,7 @@ class OTPVerificationView(APIView):
 # Login View
 class LoginView(APIView):
     def get(self, request):
-        return render(request, 'loans/login.html')
+        return render(request, 'login.html')
 
     def post(self, request):
         username = request.data.get('username')
@@ -95,7 +89,7 @@ class LoanCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        return render(request, 'loans/create_loan.html')
+        return render(request, 'create_loan.html')
 
     def post(self, request):
         serializer = LoanSerializer(data=request.data)
@@ -142,3 +136,58 @@ class AdminDashboardView(APIView):
         loans = Loan.objects.all()
         serializer = LoanSerializer(loans, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+# Admin User Management View
+class AdminUserManagementView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get(self, request):
+        users = User.objects.all()
+        serializer = UserRegistrationSerializer(users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+# Profile View
+class ProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response({
+            'username': user.username,
+            'email': user.email,
+            'is_admin': user.is_admin,
+        }, status=status.HTTP_200_OK)
+
+# About Us View
+class AboutUsView(APIView):
+    def get(self, request):
+        return render(request, 'about_us.html')
+
+# Contact Us View
+class ContactUsView(APIView):
+    def get(self, request):
+        return render(request, 'contact_us.html')
+
+# Forgot Password View
+class ForgotPasswordView(APIView):
+    def get(self, request):
+        return render(request, 'forgot_password.html')
+
+    def post(self, request):
+        email = request.data.get('email')
+        user = User.objects.filter(email=email).first()
+        if user:
+            # Generate OTP
+            otp = random.randint(100000, 999999)
+            user.otp = otp
+            user.save()
+            # Send OTP via email
+            send_mail(
+                'OTP for Password Reset',
+                f'Your OTP is: {otp}',
+                'noreply@loanmanagement.com',
+                [user.email],
+                fail_silently=False,
+            )
+            return Response({'message': 'OTP sent to your email.'}, status=status.HTTP_200_OK)
+        return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
