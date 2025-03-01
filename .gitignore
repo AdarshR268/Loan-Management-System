@@ -1,5 +1,5 @@
 # Ignore environment variables file
-# .env
+.env
 
 # Ignore compiled Python files
 __pycache__/
@@ -13,4 +13,4 @@ __pycache__/
 Loan_Management_System/__pycache__/
 Loan_Management_System/*/__pycache__/
 Loan_Management_System/*/*/__pycache__/
-# Loan_Management_System/.env
+Loan_Management_System/.env

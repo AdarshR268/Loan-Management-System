@@ -7,6 +7,8 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Loan_Management_System.settings
 application = get_wsgi_application()
 
 
-from django.core.management import call_command
-call_command('migrate')
-call_command('createsuperuser', interactive=False, email='admin@example.com', username='admin')
+try:
+    call_command('migrate')  # Apply migrations
+    call_command('createsuperuser', '--no-input', email='admin@example.com')  # Create superuser
+except Exception as e:
+    print(f"Error during startup: {e}")
