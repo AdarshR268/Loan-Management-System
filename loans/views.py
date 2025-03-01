@@ -1,193 +1,334 @@
-from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated, BasePermission
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import authenticate
-from django.core.mail import send_mail
-from .models import Loan, User
-from .serializers import LoanSerializer, UserRegistrationSerializer, OTPSerializer
-import random
+from rest_framework.permissions import IsAuthenticated
+from users.permissions import IsAdmin, IsUser
+from .models import Loan, PaymentSchedule
+from .serializers import LoanSerializer
+from datetime import datetime, timedelta
+from decimal import Decimal
+from users.models import User
+from django.db import transaction
 
-# Permission class to check if the user is an admin
-class IsAdminUser(BasePermission):
-    def has_permission(self, request, view):
-        return request.user.is_admin
+# function to validate loan input
+def validate_loan_input(amount, tenure, interest_rate):
+    """
+    Validate loan input data (amount, tenure, interest_rate).
+    Returns a tuple (is_valid, error_response).
+    """
+    if not amount or not tenure or not interest_rate:
+        return False, {
+            "status": "error",
+            "message": "All fields (amount, tenure, interest_rate) are required.",
+            "data": None
+        }
 
-# User Registration View
-class UserRegistrationView(APIView):
-    def get(self, request):
-        return render(request, 'register.html')
+    try:
+        amount = float(amount)
+        if amount < 1000 or amount > 100000:
+            return False, {
+                "status": "error",
+                "message": "Loan amount must be between ₹1,000 and ₹100,000",
+                "data": None
+            }
+    except (ValueError, TypeError):
+        return False, {
+            "status": "error",
+            "message": "Invalid amount. Amount must be a valid number.",
+            "data": None
+        }
+
+    try:
+        tenure = int(tenure)
+        if tenure < 3 or tenure > 24:
+            return False, {
+                "status": "error",
+                "message": "Loan tenure must be between 3 and 24 months",
+                "data": None
+            }
+    except (ValueError, TypeError):
+        return False, {
+            "status": "error",
+            "message": "Invalid tenure. Tenure must be a valid integer.",
+            "data": None
+        }
+
+    try:
+        interest_rate = float(interest_rate)
+        if interest_rate < 1 or interest_rate > 30:
+            return False, {
+                "status": "error",
+                "message": "Interest rate must be between 1% and 30%.",
+                "data": None
+            }
+    except (ValueError, TypeError):
+        return False, {
+            "status": "error",
+            "message": "Invalid interest rate. Interest rate must be a valid number.",
+            "data": None
+        }
+
+    return True, None
+
+class LoanView(APIView):
+    permission_classes = [IsAuthenticated, IsUser]
 
     def post(self, request):
-        serializer = UserRegistrationSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            # Generate OTP
-            otp = random.randint(100000, 999999)
-            user.otp = otp
-            user.save()
-            # Send OTP via email
-            send_mail(
-                'OTP for Email Verification',
-                f'Your OTP is: {otp}',
-                'noreply@loanmanagement.com',
-                [user.email],
-                fail_silently=False,
+        """
+        Handle POST requests to add a new loan.
+        """
+        amount = request.data.get('amount')
+        tenure = request.data.get('tenure')
+        interest_rate = request.data.get('interest_rate')
+
+        # Validate input data
+        is_valid, error_response = validate_loan_input(amount, tenure, interest_rate)
+        if not is_valid:
+            return Response(error_response, status=status.HTTP_400_BAD_REQUEST)
+
+        # Generate a unique loan_id using a thread-safe counter
+        try:
+            with transaction.atomic():
+                # Get the latest loan_id and increment it atomically
+                latest_loan = Loan.objects.select_for_update().order_by('-loan_id').first()
+                if latest_loan:
+                    latest_id = int(latest_loan.loan_id.replace("LOAN", ""))
+                    new_id = latest_id + 1
+                else:
+                    new_id = 1
+                loan_id = f"LOAN{new_id}"
+        except Exception as e:
+            return Response(
+                {
+                    "status": "error",
+                    "message": "Failed to generate loan ID.",
+                    "data": None
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-            return Response({'message': 'OTP sent to your email.'}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# OTP Verification View
-class OTPVerificationView(APIView):
-    def get(self, request):
-        return render(request, 'verify_otp.html')
+        # Calculate monthly installment and total interest
+        monthly_interest_rate = (interest_rate / 100) / 12
+        monthly_installment = (amount * monthly_interest_rate) / (1 - (1 + monthly_interest_rate) ** (-tenure))
+        total_interest = (monthly_installment * tenure) - amount
+        total_amount = amount + total_interest
 
-    def post(self, request):
-        serializer = OTPSerializer(data=request.data)
-        if serializer.is_valid():
-            email = serializer.validated_data['email']
-            otp = serializer.validated_data['otp']
-            user = User.objects.filter(email=email).first()
-            if user and user.otp == otp:
-                user.is_verified = True
-                user.save()
-                return Response({'message': 'Email verified successfully.'}, status=status.HTTP_200_OK)
-            return Response({'error': 'Invalid OTP.'}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # Create the loan
+        loan = Loan.objects.create(
+            user=request.user,
+            loan_id=loan_id,  
+            amount=amount,
+            tenure=tenure,
+            interest_rate=interest_rate,
+            monthly_installment=monthly_installment,
+            total_interest=total_interest,
+            total_amount=total_amount,
+            amount_remaining=total_amount,
+        )
 
-# Login View
-class LoginView(APIView):
-    def get(self, request):
-        return render(request, 'login.html')
+        # Create payment schedule
+        today = datetime.now()
+        for i in range(1, tenure + 1):
+            due_date = today + timedelta(days=30 * i)
+            PaymentSchedule.objects.create(
+                loan=loan,
+                installment_no=i,
+                due_date=due_date,
+                amount=monthly_installment,
+            )
 
-    def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-
-        # Authenticate the user
-        user = authenticate(username=username, password=password)
-        if not user:
-            return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-
-        # Generate JWT token
-        refresh = RefreshToken.for_user(user)
-
-        # Include the user's role in the token payload
-        access_token = str(refresh.access_token)
-        refresh_token = str(refresh)
-
+        serializer = LoanSerializer(loan)
         return Response({
-            'access_token': access_token,
-            'refresh_token': refresh_token,
-            'role': 'admin' if user.is_admin else 'user'
+            "status": "success",
+            "message": "Loan created successfully.",
+            "data": serializer.data
+        }, status=status.HTTP_201_CREATED)
+
+    def get(self, request):
+        
+        user = request.user
+        status_filter = request.query_params.get('status', None)
+        loans = Loan.objects.filter(user=user)  # Only fetch loans for the logged-in user
+        if status_filter:
+            loans = loans.filter(status=status_filter)
+        serializer = LoanSerializer(loans, many=True)
+        return Response({
+            "status": "success",
+            "message": "Loans retrieved successfully.",
+            "data": {"loans": serializer.data}
         }, status=status.HTTP_200_OK)
 
-# Loan Create View
-class LoanCreateView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        return render(request, 'create_loan.html')
-
-    def post(self, request):
-        serializer = LoanSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(user=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# Loan List View
-class LoanListView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        loans = Loan.objects.filter(user=request.user)
-        serializer = LoanSerializer(loans, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-# Loan Detail View
-class LoanDetailView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, loan_id):
-        loan = get_object_or_404(Loan, id=loan_id, user=request.user)
-        serializer = LoanSerializer(loan)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-# Loan Foreclosure View
-class LoanForeclosureView(APIView):
-    permission_classes = [IsAuthenticated]
+class ForecloseLoanView(APIView):
+    permission_classes = [IsAuthenticated, IsUser]
 
     def post(self, request, loan_id):
-        loan = get_object_or_404(Loan, id=loan_id, user=request.user)
-        if loan.status == 'ACTIVE':
-            loan.status = 'CLOSED'
-            loan.save()
-            return Response({'message': 'Loan foreclosed successfully.'}, status=status.HTTP_200_OK)
-        return Response({'error': 'Loan is already closed.'}, status=status.HTTP_400_BAD_REQUEST)
+        """
+        Handle POST requests to foreclose a loan.
+        """
+        # Get loan_id from the request body
+        body_loan_id = request.data.get('loan_id')
 
-# Admin Dashboard View
-class AdminDashboardView(APIView):
-    permission_classes = [IsAuthenticated, IsAdminUser]
+        
+        if loan_id != body_loan_id:
+            return Response(
+                {
+                    "status": "error",
+                    "message": "Loan ID in the URL does not match the Loan ID in the request body.",
+                    "data": None
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-    def get(self, request):
-        loans = Loan.objects.all()
-        serializer = LoanSerializer(loans, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        # Fetch the loan from the database
+        try:
+            loan = Loan.objects.get(loan_id=loan_id, user=request.user)  
+        except Loan.DoesNotExist:
+            return Response(
+                {
+                    "status": "error",
+                    "message": "Loan not found or you do not have permission to access this loan.",
+                    "data": None
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
 
-# Admin User Management View
-class AdminUserManagementView(APIView):
-    permission_classes = [IsAuthenticated, IsAdminUser]
+        # Check if the loan is active
+        if loan.status != 'ACTIVE':
+            return Response(
+                {
+                    "status": "error",
+                    "message": "Loan is not active.",
+                    "data": None
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-    def get(self, request):
-        users = User.objects.all()
-        serializer = UserRegistrationSerializer(users, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        # Calculate foreclosure discount and final settlement amount
+        foreclosure_discount = loan.total_interest * Decimal('0.1')  # 10% discount on interest
+        final_settlement_amount = loan.total_amount - foreclosure_discount
 
-# Profile View
-class ProfileView(APIView):
-    permission_classes = [IsAuthenticated]
+        # Update loan status and amount paid
+        loan.amount_paid = final_settlement_amount
+        loan.amount_remaining = Decimal('0')  # Set amount_remaining to 0
+        loan.status = 'FORECLOSED'
+        loan.save()
 
-    def get(self, request):
-        user = request.user
         return Response({
-            'username': user.username,
-            'email': user.email,
-            'is_admin': user.is_admin,
+            "status": "success",
+            "message": "Loan foreclosed successfully.",
+            "data": {
+                "loan_id": loan.loan_id,
+                "amount_paid": final_settlement_amount,
+                "foreclosure_discount": foreclosure_discount,
+                "final_settlement_amount": final_settlement_amount,
+                "status": loan.status,
+            }
         }, status=status.HTTP_200_OK)
 
-# About Us View
-class AboutUsView(APIView):
-    def get(self, request):
-        return render(request, 'about_us.html')
+class AdminLoanView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]  # Only admin can access this view
 
-# Contact Us View
-class ContactUsView(APIView):
     def get(self, request):
-        return render(request, 'contact_us.html')
+        
+        loans = Loan.objects.all()
+        loan_data = []
+        for loan in loans:
+            loan_data.append({
+                "loan_id": loan.loan_id,
+                "user_id": loan.user.id,
+                "user_email": loan.user.email,
+                "amount": loan.amount,
+                "tenure": loan.tenure,
+                "interest_rate": loan.interest_rate,
+                "monthly_installment": loan.monthly_installment,
+                "total_interest": loan.total_interest,
+                "total_amount": loan.total_amount,
+                "amount_paid": loan.amount_paid,
+                "amount_remaining": loan.amount_remaining,
+                "status": loan.status,
+                "created_at": loan.created_at,
+            })
 
-# Forgot Password View
-class ForgotPasswordView(APIView):
-    def get(self, request):
-        return render(request, 'forgot_password.html')
+        return Response(
+            {"status": "success", "message": "Loans retrieved successfully.", "data": loan_data},
+            status=status.HTTP_200_OK
+        )
 
     def post(self, request):
-        email = request.data.get('email')
-        user = User.objects.filter(email=email).first()
-        if user:
-            # Generate OTP
-            otp = random.randint(100000, 999999)
-            user.otp = otp
-            user.save()
-            # Send OTP via email
-            send_mail(
-                'OTP for Password Reset',
-                f'Your OTP is: {otp}',
-                'noreply@loanmanagement.com',
-                [user.email],
-                fail_silently=False,
+        """
+        Handle POST requests to list loans for a specific user (admin only).
+        """
+        user_id = request.data.get('user_id')
+        if not user_id:
+            return Response(
+                {"status": "error", "message": "user_id is required in the request body.", "data": None},
+                status=status.HTTP_400_BAD_REQUEST
             )
-            return Response({'message': 'OTP sent to your email.'}, status=status.HTTP_200_OK)
-        return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Check if the user exists
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response(
+                {"status": "error", "message": f"User with ID {user_id} does not exist.", "data": None},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Fetch loans for the given user_id
+        loans = Loan.objects.filter(user_id=user_id)
+
+        # Check if any loans exist for the user
+        if not loans.exists():
+            return Response(
+                {
+                    "status": "success",
+                    "message": f"User {user.email} (ID: {user_id}) has not taken any loans.",
+                    "data": None
+                },
+                status=status.HTTP_200_OK
+            )
+
+        # Serialize and return the loans
+        serializer = LoanSerializer(loans, many=True)
+        return Response(
+            {
+                "status": "success",
+                "message": f"Loans for user {user.email} (ID: {user_id}):",
+                "data": serializer.data
+            },
+            status=status.HTTP_200_OK
+        )
+
+    def delete(self, request):
+        """
+        Handle DELETE requests to delete a specific loan (admin only).
+        """
+        loan_id = request.data.get('loan_id')
+        if not loan_id:
+            return Response(
+                {"status": "error", "message": "loan_id is required in the request body.", "data": None},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Fetch the loan by loan_id
+        loan = Loan.objects.filter(loan_id=loan_id).first()
+        if not loan:
+            return Response(
+                {"status": "error", "message": f"Loan with ID {loan_id} not found.", "data": None},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        user = loan.user
+
+        deleted_loan_details = {
+            "user_id": user.id,
+            "user_email": user.email,
+            "loan_id": loan.loan_id,
+        }
+
+        # Delete the loan
+        loan.delete()
+        return Response(
+            {"status": "success", "message": "Loan deleted successfully.", "data": deleted_loan_details},
+            status=status.HTTP_200_OK
+        )

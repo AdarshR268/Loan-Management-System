@@ -1,31 +1,16 @@
-
-loan_management_backend/__pycache__/
-loan_management_backend/*/__pycache__/
-loan_management_backend/*/*/__pycache__/
-loan_management_backend/.env
-
-
 # Ignore environment variables file
-.env
-loan_management_backend/.env
-
-# Ignore database files (if using SQLite)
-db.sqlite3
+# .env
 
 # Ignore compiled Python files
 __pycache__/
+*.py[cod]
+*$py.class
 
 # Ignore logs
 *.log
 
-# Ignore environment variables file
-.env
-
-# Ignore database files (if using SQLite)
-db.sqlite3
-
-# Ignore compiled Python files
-__pycache__/
-
-# Ignore logs
-*.log
+# Ignore specific directories and files in loan_management_backend
+Loan_Management_System/__pycache__/
+Loan_Management_System/*/__pycache__/
+Loan_Management_System/*/*/__pycache__/
+# Loan_Management_System/.env
