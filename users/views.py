@@ -32,10 +32,10 @@ class RegisterView(APIView):
         user.save()
 
 
-        # Call Node.js email service to send OTP
+        # Call the deployed Node.js email service to send OTP
         try:
             response = requests.post(
-                'http://localhost:3000/send-otp',  # Node.js email service endpoint
+                'https://otp-email-service-g7i9.onrender.com/send-otp',  # Updated Render service URL
                 json={'email': email, 'otp': otp},  # Send email and OTP to Node.js
                 headers={'Content-Type': 'application/json'}  # Set content type to JSON
             )
