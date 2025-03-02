@@ -1,0 +1,503 @@
+{
+	"info": {
+		"_postman_id": "d0e24ef5-587a-4a3b-94da-0e05b70f845f",
+		"name": "LMS-API Endpoint Testing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "42708495"
+	},
+	"item": [
+		{
+			"name": "User/Admin Register",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"lmstestuser1@mailinator.com\",\r\n  \"password\": \"password123\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://loan-management-system-2ct2.onrender.com/api/users/",
+					"protocol": "https",
+					"host": [
+						"loan-management-system-2ct2",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"api",
+						"users",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "User/Admin OTP Verify",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"lmstestuser1@mailinator.com\",\r\n  \"otp\": \"4812\" \r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://loan-management-system-2ct2.onrender.com/api/users/verify-otp/",
+					"protocol": "https",
+					"host": [
+						"loan-management-system-2ct2",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"api",
+						"users",
+						"verify-otp",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "User/Admin Login",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"lmstestuser1@mailinator.com\",\r\n  \"password\": \"password123\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://loan-management-system-2ct2.onrender.com/api/users/login/",
+					"protocol": "https",
+					"host": [
+						"loan-management-system-2ct2",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"api",
+						"users",
+						"login",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "User Profile",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwODg0NzkwLCJpYXQiOjE3NDA4ODExOTAsImp0aSI6IjQwNDI3MzkzYzg2NzRkMGE4YWFkMjZlNzA5OWJlMjFiIiwidXNlcl9pZCI6MTR9.CnnOinNvf4dh_U4FQr-5q8bVfmhAHG3yN48k6KmBsM8",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://loan-management-system-2ct2.onrender.com/api/users/profile/",
+					"protocol": "https",
+					"host": [
+						"loan-management-system-2ct2",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"api",
+						"users",
+						"profile",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "User  Add Loan",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwODg0NzkwLCJpYXQiOjE3NDA4ODExOTAsImp0aSI6IjQwNDI3MzkzYzg2NzRkMGE4YWFkMjZlNzA5OWJlMjFiIiwidXNlcl9pZCI6MTR9.CnnOinNvf4dh_U4FQr-5q8bVfmhAHG3yN48k6KmBsM8",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"amount\": 30000,  \r\n  \"tenure\": 6,    \r\n  \"interest_rate\": 12\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://loan-management-system-2ct2.onrender.com/api/loans/",
+					"protocol": "https",
+					"host": [
+						"loan-management-system-2ct2",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"api",
+						"loans",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "User  List Loans",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwODg0NzkwLCJpYXQiOjE3NDA4ODExOTAsImp0aSI6IjQwNDI3MzkzYzg2NzRkMGE4YWFkMjZlNzA5OWJlMjFiIiwidXNlcl9pZCI6MTR9.CnnOinNvf4dh_U4FQr-5q8bVfmhAHG3yN48k6KmBsM8",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://loan-management-system-2ct2.onrender.com/api/loans/",
+					"protocol": "https",
+					"host": [
+						"loan-management-system-2ct2",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"api",
+						"loans",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "User Loan Foreclosure",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwODg0NzkwLCJpYXQiOjE3NDA4ODExOTAsImp0aSI6IjQwNDI3MzkzYzg2NzRkMGE4YWFkMjZlNzA5OWJlMjFiIiwidXNlcl9pZCI6MTR9.CnnOinNvf4dh_U4FQr-5q8bVfmhAHG3yN48k6KmBsM8",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"loan_id\": \"LOAN1\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://loan-management-system-2ct2.onrender.com/api/loans/LOAN1/foreclose/",
+					"protocol": "https",
+					"host": [
+						"loan-management-system-2ct2",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"api",
+						"loans",
+						"LOAN1",
+						"foreclose",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Refresh Token",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"refresh_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc0MDk2NzU5MCwiaWF0IjoxNzQwODgxMTkwLCJqdGkiOiJiN2I2OWU3MDZkYzY0NGJiOGE3NjNjNzA3ZmUxMjhmNSIsInVzZXJfaWQiOjE0fQ.gQctpHx3P6ly-f2ftKFEu7ZLu2YnbJglcBBVWPPlRlw\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://loan-management-system-2ct2.onrender.com/api/users/refresh-token/",
+					"protocol": "https",
+					"host": [
+						"loan-management-system-2ct2",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"api",
+						"users",
+						"refresh-token",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "User Logout",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwODg2NDc1LCJpYXQiOjE3NDA4ODExOTAsImp0aSI6IjAyZmIzOGVhMzQ0ZDRiZTNiNjJjZjVkMTYzYzQxNTViIiwidXNlcl9pZCI6MTR9.N-3nXdkA14oQwPPc-1prtdPF-iS_HF5GS6g1ox8qmAs",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"refresh_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc0MDk2NzU5MCwiaWF0IjoxNzQwODgxMTkwLCJqdGkiOiJiN2I2OWU3MDZkYzY0NGJiOGE3NjNjNzA3ZmUxMjhmNSIsInVzZXJfaWQiOjE0fQ.gQctpHx3P6ly-f2ftKFEu7ZLu2YnbJglcBBVWPPlRlw\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://loan-management-system-2ct2.onrender.com/api/users/logout/",
+					"protocol": "https",
+					"host": [
+						"loan-management-system-2ct2",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"api",
+						"users",
+						"logout",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ADMIN Register",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"lmstestuser3@mailinator.com\",\r\n  \"password\": \"password123\",\r\n  \"role\": \"ADMIN\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://loan-management-system-2ct2.onrender.com/api/users/",
+					"protocol": "https",
+					"host": [
+						"loan-management-system-2ct2",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"api",
+						"users",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ADMIN List All Loans",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwODg3MDkxLCJpYXQiOjE3NDA4ODM0OTEsImp0aSI6IjI4NzlkNDRhOGJmMzRjNjNhMjU0ZTkyYjQ0ZDUzYmNkIiwidXNlcl9pZCI6MTZ9.VIQ4CL7c02bI008IgdoW5oGmSEF0fGFDTiZ8ZGaYgRA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://loan-management-system-2ct2.onrender.com/api/loans/admin/",
+					"protocol": "https",
+					"host": [
+						"loan-management-system-2ct2",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"api",
+						"loans",
+						"admin",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ADMIN User Loans",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwODg3MDkxLCJpYXQiOjE3NDA4ODM0OTEsImp0aSI6IjI4NzlkNDRhOGJmMzRjNjNhMjU0ZTkyYjQ0ZDUzYmNkIiwidXNlcl9pZCI6MTZ9.VIQ4CL7c02bI008IgdoW5oGmSEF0fGFDTiZ8ZGaYgRA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"user_id\": 14\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://loan-management-system-2ct2.onrender.com/api/loans/admin/",
+					"protocol": "https",
+					"host": [
+						"loan-management-system-2ct2",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"api",
+						"loans",
+						"admin",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ADMIN Delete Loan",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQwODg3MDkxLCJpYXQiOjE3NDA4ODM0OTEsImp0aSI6IjI4NzlkNDRhOGJmMzRjNjNhMjU0ZTkyYjQ0ZDUzYmNkIiwidXNlcl9pZCI6MTZ9.VIQ4CL7c02bI008IgdoW5oGmSEF0fGFDTiZ8ZGaYgRA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"loan_id\": \"LOAN2\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://loan-management-system-2ct2.onrender.com/api/loans/admin/",
+					"protocol": "https",
+					"host": [
+						"loan-management-system-2ct2",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"api",
+						"loans",
+						"admin",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
