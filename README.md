@@ -222,7 +222,7 @@ Contributions are welcome! Please follow these steps:
 ## Contact
 
 For questions or feedback, please contact:
-- **YADARSH R**
+- **ADARSH R**
 - **Email**: adarshofficial268@gmail.com
 
 - **GitHub**: [AdarshR268](https://github.com/AdarshR268/)
